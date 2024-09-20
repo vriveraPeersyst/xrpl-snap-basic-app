@@ -1,92 +1,87 @@
-+++
 
-XRPL Snap Basic App
-This project demonstrates how to integrate MetaMask Snaps with the XRP Ledger (XRPL) to manage trustlines and interact with accounts. The app allows users to connect their MetaMask wallet, fetch their XRP Ledger account, and set up trustlines dynamically.
+# XRPL Snap Basic App
 
-Features
-MetaMask Snap Integration: Utilizes the XRPL Snap to connect with the XRP Ledger through MetaMask.
-Dynamic Trustline Setup: Allows users to dynamically set up trustlines using their XRPL account.
-Account Information: Fetches and displays the XRPL account connected via MetaMask Snap.
-Project Structure
-SetTrustline.tsx: Component to set up a trustline using a dynamically fetched XRPL account.
-MetaMaskRepository: Utility class to interact with MetaMask Snap and fetch XRPL account details.
-Getting Started
-Prerequisites
-Before you can use the app, make sure you have:
+This project demonstrates how to integrate MetaMask Snaps with the XRP Ledger (XRPL) using the XRPL Snap. The app allows users to connect to MetaMask, fetch their XRPL account, and set up a trustline for a token on the XRP Ledger.
 
-Node.js (v14 or higher)
-MetaMask installed in your browser
-A MetaMask Snap for XRP Ledger installed (npm:@peersyst/xrpl-snap)
-Installation
-Clone the repository:
+## Features
 
-+++bash git clone https://github.com/your-username/xrpl-snap-basic-app.git +++
+- Connect to MetaMask and request the XRPL Snap.
+- Dynamically fetch the connected XRPL account.
+- Set up a trustline for a specific token issuer and currency.
+- Display status and error messages for the user.
 
-Navigate to the project directory:
+## Installation
 
-+++bash cd xrpl-snap-basic-app +++
+### Prerequisites
 
-Install dependencies:
+Before running this project, make sure you have the following installed:
 
-+++bash npm install +++
+- [Node.js](https://nodejs.org/)
+- [MetaMask](https://metamask.io/) installed in your browser
+- [Git](https://git-scm.com/)
 
-Running the App Locally
-To run the app locally on your machine:
+### Steps
 
-Start the development server:
+1. Clone the repository:
 
-+++bash npm start +++
+   ```bash
+   git clone https://github.com/your-username/xrpl-snap-basic-app.git
+   ```
 
-Open your browser and go to http://localhost:3000.
+2. Navigate into the project directory:
 
-Usage
-Connect MetaMask: Ensure MetaMask is installed and configured. Open MetaMask and make sure the XRP Ledger Snap is installed.
-Set Trustline:
-Enter the issuer's address, token currency (e.g., USD), and the limit amount in the input fields.
-Click "Set Trustline" to create the trustline with the specified parameters.
-MetaMask Snap Setup
-To install the XRP Ledger Snap on MetaMask, follow these steps:
+   ```bash
+   cd xrpl-snap-basic-app
+   ```
 
-Open MetaMask.
-Go to Settings > Snaps and search for the XRP Ledger Snap.
-Install the Snap to interact with the XRPL.
-Deployment
-Configuring GitHub Pages
-In the package.json, make sure the homepage field is correctly configured:
+3. Install the dependencies:
 
-+++json "homepage": "https://your-username.github.io/xrpl-snap-basic-app/" +++
+   ```bash
+   npm install
+   ```
 
-To deploy the app:
+4. Start the development server:
 
-+++bash npm run deploy +++
+   ```bash
+   npm start
+   ```
 
-Your app will be available at https://your-username.github.io/xrpl-snap-basic-app/.
+5. Open your browser and connect to the MetaMask wallet.
 
-Available Scripts
-In the project directory, you can run:
+## Usage
 
-npm start: Runs the app in development mode. Open http://localhost:3000 to view it in the browser.
-npm run build: Builds the app for production to the build folder. It correctly bundles React in production mode and optimizes the build for the best performance.
-npm run deploy: Builds and deploys the app to GitHub Pages.
-Documentation
-For more detailed documentation on MetaMask Snaps and XRPL Snap, refer to the following:
+1. Once the application is running, click the **Connect MetaMask** button to connect your wallet.
+2. After connecting MetaMask, your XRPL account will be fetched automatically.
+3. Enter the token issuer address, token currency (e.g., USD), and limit amount to set up a trustline.
+4. Click **Set Trustline** to establish a trustline on the XRP Ledger.
 
-XRPL Snap Official Documentation: https://snap-docs.xrplevm.org/
-Additional XRPL Snap API Docs: https://docs.xrplsnap.com/
-Custom GPT Assistant
-If you need further assistance with integrating XRPL Snap into MetaMask or setting up your dApp, you can use the custom GPT assistant for detailed guidance:
+## Deployment
 
-XRPL MetaMask Snap Integration Assistant: https://chatgpt.com/g/g-NJuynjNpi-xrpl-metamask-snap-integration-assistant
-Contributing
-Feel free to fork the repository and submit pull requests if you would like to contribute. Make sure to follow the project's code style and best practices.
+To deploy the app to GitHub Pages:
 
-License
-This project is licensed under the MIT License. See the LICENSE file for details.
+1. Install GitHub Pages as a dev dependency:
 
-Key Additions:
-Documentation Links:
+   ```bash
+   npm install gh-pages --save-dev
+   ```
 
-Added links to the XRPL Snap official documentation (snap-docs.xrplevm.org) and API documentation (docs.xrplsnap.com).
-Custom GPT Assistant:
+2. Add the following scripts to your `package.json` file:
 
-Included a link to the custom GPT assistant (XRPL MetaMask Snap Integration Assistant) to provide further guidance on integration. +++
+   ```json
+   "scripts": {
+     "predeploy": "npm run build",
+     "deploy": "gh-pages -d build"
+   }
+   ```
+
+3. Deploy the app:
+
+   ```bash
+   npm run deploy
+   ```
+
+4. Your app will be live at: `https://your-username.github.io/xrpl-snap-basic-app/`.
+
+## License
+
+This project is open-source and available under the [MIT License](LICENSE).
