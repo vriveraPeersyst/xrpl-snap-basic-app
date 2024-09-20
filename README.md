@@ -20,22 +20,22 @@ A MetaMask Snap for XRP Ledger installed (npm:@peersyst/xrpl-snap)
 Installation
 Clone the repository:
 
-+++ bash git clone https://github.com/your-username/xrpl-snap-basic-app.git +++
++++bash git clone https://github.com/your-username/xrpl-snap-basic-app.git +++
 
 Navigate to the project directory:
 
-+++ bash cd xrpl-snap-basic-app +++
++++bash cd xrpl-snap-basic-app +++
 
 Install dependencies:
 
-+++ bash npm install +++
++++bash npm install +++
 
 Running the App Locally
 To run the app locally on your machine:
 
 Start the development server:
 
-+++ bash npm start +++
++++bash npm start +++
 
 Open your browser and go to http://localhost:3000.
 
@@ -54,18 +54,18 @@ Deployment
 Configuring GitHub Pages
 In the package.json, make sure the homepage field is correctly configured:
 
-+++ json "homepage": "https://your-username.github.io/xrpl-snap-basic-app/" +++
++++json "homepage": "https://your-username.github.io/xrpl-snap-basic-app/" +++
 
 To deploy the app:
 
-+++ bash npm run deploy +++
++++bash npm run deploy +++
 
 Your app will be available at https://your-username.github.io/xrpl-snap-basic-app/.
 
 Available Scripts
 In the project directory, you can run:
 
-npm start: Runs the app in development mode.<br> Open http://localhost:3000 to view it in the browser.
+npm start: Runs the app in development mode. Open http://localhost:3000 to view it in the browser.
 npm run build: Builds the app for production to the build folder. It correctly bundles React in production mode and optimizes the build for the best performance.
 npm run deploy: Builds and deploys the app to GitHub Pages.
 Documentation
@@ -89,4 +89,4 @@ Documentation Links:
 Added links to the XRPL Snap official documentation (snap-docs.xrplevm.org) and API documentation (docs.xrplsnap.com).
 Custom GPT Assistant:
 
-Included a link to the custom GPT assistant (XRPL MetaMask Snap Integration Assistant) to provide further guidance on integration.
+Included a link to the custom GPT assistant (XRPL MetaMask Snap Integration Assistant) to provide further guidance on integration. +++
