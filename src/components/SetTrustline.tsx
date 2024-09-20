@@ -101,7 +101,7 @@ const SetTrustline: React.FC = () => {
   // Fetch the XRPL account when the component mounts
   useEffect(() => {
     fetchXRPLAccount();
-  }, []);
+  });
 
   return (
     <div>
