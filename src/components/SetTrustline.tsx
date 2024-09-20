@@ -35,6 +35,28 @@ class MetaMaskRepository {
   }
 }
 
+// Utility function to convert currency string to 40-character hex if needed
+const convertCurrencyToHex = (currency: string): string => {
+    // Check if it's already a valid 40-character hex string
+    if (/^[A-Fa-f0-9]{40}$/.test(currency)) {
+      return currency;
+    }
+  
+    // If the currency code is exactly 3 characters, keep it as-is
+    if (currency.length === 3 && /^[A-Za-z0-9?!@#$%^&*<>()[\]{}|]+$/.test(currency)) {
+      return currency; // Return the original 3-character code without converting to hex
+    }
+  
+    // Convert non-standard currency codes to hex
+    const currencyHex = Buffer.from(currency, 'utf8').toString('hex').toUpperCase();
+  
+    // Pad the hex value to 40 characters if necessary (right pad with 0s)
+    const paddedCurrencyHex = currencyHex.padEnd(40, '0');
+  
+    return paddedCurrencyHex;
+  };
+  
+
 const SetTrustline: React.FC = () => {
   const [rAddress, setRAddress] = useState('');
   const [limitAmount, setLimitAmount] = useState('1000');
@@ -69,6 +91,9 @@ const SetTrustline: React.FC = () => {
       if (window.ethereum) {
         const provider = window.ethereum;
 
+        // Convert token currency to hex if needed
+        const currencyHex = convertCurrencyToHex(tokenCurrency);
+
         const result = await provider.request({
           method: 'wallet_invokeSnap',
           params: {
@@ -79,7 +104,7 @@ const SetTrustline: React.FC = () => {
                 TransactionType: 'TrustSet',
                 Account: xrplAccount, // Dynamically set the connected user’s account
                 LimitAmount: {
-                  currency: tokenCurrency,
+                  currency: currencyHex, // Currency code in hex
                   issuer: rAddress,
                   value: limitAmount,
                 },
@@ -122,7 +147,7 @@ const SetTrustline: React.FC = () => {
         type="text"
         value={tokenCurrency}
         onChange={(e) => setTokenCurrency(e.target.value)}
-        placeholder="Enter Token Currency (e.g., USD)"
+        placeholder="Enter Token Currency (e.g., USD or a custom currency)"
       />
       <button onClick={setupTrustline} disabled={!xrplAccount}>
         {xrplAccount ? 'Set Trustline' : 'Fetching XRPL Account...'}
@@ -132,5 +157,8 @@ const SetTrustline: React.FC = () => {
     </div>
   );
 };
+
+export default SetTrustline;
+
 
 export default SetTrustline;
