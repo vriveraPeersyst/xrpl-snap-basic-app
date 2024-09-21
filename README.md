@@ -54,34 +54,3 @@ Before running this project, make sure you have the following installed:
 2. After connecting MetaMask, your XRPL account will be fetched automatically.
 3. Enter the token issuer address, token currency (e.g., USD), and limit amount to set up a trustline.
 4. Click **Set Trustline** to establish a trustline on the XRP Ledger.
-
-## Deployment
-
-To deploy the app to GitHub Pages:
-
-1. Install GitHub Pages as a dev dependency:
-
-   ```bash
-   npm install gh-pages --save-dev
-   ```
-
-2. Add the following scripts to your `package.json` file:
-
-   ```json
-   "scripts": {
-     "predeploy": "npm run build",
-     "deploy": "gh-pages -d build"
-   }
-   ```
-
-3. Deploy the app:
-
-   ```bash
-   npm run deploy
-   ```
-
-4. Your app will be live at: `https://your-username.github.io/xrpl-snap-basic-app/`.
-
-## License
-
-This project is open-source and available under the [MIT License](LICENSE).
