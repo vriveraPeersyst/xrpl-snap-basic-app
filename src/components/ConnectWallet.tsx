@@ -10,7 +10,6 @@ const config = {
 class MetaMaskRepository {
   public provider?: MetaMaskInpageProvider | null;
 
-  // Initialize MetaMask and check for Snap support
   public async onInit() {
     this.provider = await this.getProvider();
     if (!this.provider) {
@@ -18,7 +17,6 @@ class MetaMaskRepository {
     }
   }
 
-  // Install the XRPL Snap
   public async requestSnap() {
     await this.request({
       method: 'wallet_requestSnaps',
@@ -28,7 +26,6 @@ class MetaMaskRepository {
     });
   }
 
-  // Get XRPL account (wallet) from the Snap
   public async getWallet(): Promise<{ account: string } | null> {
     const result = await this.invokeSnap({
       method: 'xrpl_getAccount',
@@ -42,7 +39,6 @@ class MetaMaskRepository {
     return null; // If the result is invalid or doesn't have an account
   }
 
-  // Fetch account info from the XRP Ledger using the Snap
   public async getAccountInfo(account: string): Promise<any & { signer_lists?: any[] }> {
     const { result } = (await this.invokeSnap({
       method: 'xrpl_request',
@@ -55,7 +51,6 @@ class MetaMaskRepository {
     throw new Error('Account not found');
   }
 
-  // Helper function to interact with the Snap
   private async invokeSnap({ method, params }: { method: string; params: any }) {
     return this.request({
       method: 'wallet_invokeSnap',
@@ -69,14 +64,12 @@ class MetaMaskRepository {
     });
   }
 
-  // Helper function to check if Snaps are supported
   private async getProvider() {
     if (typeof window === 'undefined') return null;
     if (await this.hasSnapsSupport()) return window.ethereum;
     return null;
   }
 
-  // Check if Snaps are supported in MetaMask
   private async hasSnapsSupport(provider: MetaMaskInpageProvider = window.ethereum): Promise<boolean> {
     try {
       await provider.request({
@@ -88,48 +81,41 @@ class MetaMaskRepository {
     }
   }
 
-  // General method to send requests to MetaMask
   private async request({ method, params }: RequestArguments) {
     if (!this.provider) throw new Error('MetaMask provider not initialized');
     return this.provider.request({ method, params });
   }
 }
 
-// React Component
-const ConnectWallet: React.FC = () => {
+interface ConnectWalletProps {
+  onConnect: (xrplAccount: string) => void;
+}
+
+const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnect }) => {
   const [connected, setConnected] = useState(false);
-  const [evmAccount, setEvmAccount] = useState<string | null>(null);
   const [xrplAccount, setXrplAccount] = useState<string | null>(null);
-  const [xrplAccountDetails, setXrplAccountDetails] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const metaMaskRepository = new MetaMaskRepository();
 
   const connectWallet = async () => {
     try {
-      // Step 1: Initialize MetaMask and ensure Snap support
       await metaMaskRepository.onInit();
 
       const provider = metaMaskRepository.provider;
       if (provider) {
-        // Step 2: Request the MetaMask EVM account
-        const accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
+        const accounts = (await provider.request({
+          method: 'eth_requestAccounts',
+        })) as string[];
 
         if (accounts && accounts.length > 0) {
-          setEvmAccount(accounts[0]);
-          setConnected(true);
-
-          // Step 3: Install the XRPL Snap if not installed
           await metaMaskRepository.requestSnap();
 
-          // Step 4: Request XRPL Wallet (get XRPL account)
           const xrplWallet = await metaMaskRepository.getWallet();
           if (xrplWallet && xrplWallet.account) {
-            setXrplAccount(xrplWallet.account); // Save XRPL account
-
-            // Step 5: Fetch account details from XRP Ledger
-            const accountDetails = await metaMaskRepository.getAccountInfo(xrplWallet.account);
-            setXrplAccountDetails(accountDetails);
+            setXrplAccount(xrplWallet.account);
+            setConnected(true);
+            onConnect(xrplWallet.account); // Pass XRPL account to parent component
           } else {
             setErrorMessage('Failed to retrieve XRPL account.');
           }
@@ -147,25 +133,22 @@ const ConnectWallet: React.FC = () => {
 
   return (
     <div>
-      {connected ? (
-        <>
-          <p>Connected EVM Account: {evmAccount}</p>
-          <p>Connected XRPL Account: {xrplAccount ? xrplAccount : 'Fetching...'}</p>
-          {xrplAccountDetails && (
-            <div>
-              <h3>XRPL Account Details</h3>
-              <p>Account: {xrplAccountDetails.Account}</p>
-              <p>Balance: {xrplAccountDetails.Balance} drops</p>
-              <p>Owner Count: {xrplAccountDetails.OwnerCount}</p>
-              <p>Sequence: {xrplAccountDetails.Sequence}</p>
-              {/* You can display more fields if needed */}
-            </div>
-          )}
-          {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-        </>
+      {!connected ? (
+        <button
+          onClick={connectWallet}
+          className="w-full bg-blue-500 text-white py-3 px-6 rounded-full hover:bg-blue-600 flex items-center justify-center space-x-2 transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+          </svg>
+          <span className="text-lg font-semibold">Connect XRPL MetaMask Snap</span>
+        </button>
       ) : (
-        <button onClick={connectWallet}>Connect MetaMask</button>
+        <div className="text-center">
+          <p>Connected XRPL Account: {xrplAccount}</p>
+        </div>
       )}
+      {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
     </div>
   );
 };

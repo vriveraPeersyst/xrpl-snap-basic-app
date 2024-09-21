@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MetaMaskInpageProvider } from '@metamask/providers';
 
 declare global {
@@ -7,33 +7,14 @@ declare global {
   }
 }
 
-// MetaMaskRepository Class (simulating the getWallet method)
-class MetaMaskRepository {
-  public async getWallet(): Promise<{ account: string } | null> {
-    if (!window.ethereum) {
-      throw new Error('MetaMask is not available');
-    }
-
-    const provider = window.ethereum;
-
-    const result = await provider.request({
-      method: 'wallet_invokeSnap',
-      params: {
-        snapId: 'npm:@peersyst/xrpl-snap',
-        request: {
-          method: 'xrpl_getAccount',
-          params: undefined,
-        },
-      },
-    });
-
-    if (result && typeof result === 'object' && 'account' in result) {
-      return result as { account: string };
-    }
-
-    return null; // If the result is invalid or doesn't have an account
-  }
-}
+// Utility function to convert currency string to 40-character hex if needed
+const convertCurrencyToHex = (currency: string): string => {
+  if (/^[A-Fa-f0-9]{40}$/.test(currency)) return currency;
+  if (currency.length === 3) return currency;
+  
+  const currencyHex = Buffer.from(currency, 'utf8').toString('hex').toUpperCase();
+  return currencyHex.padEnd(40, '0');
+};
 
 const SetTrustline: React.FC = () => {
   const [rAddress, setRAddress] = useState('');
@@ -42,14 +23,24 @@ const SetTrustline: React.FC = () => {
   const [status, setStatus] = useState<string | null>(null);
   const [xrplAccount, setXrplAccount] = useState<string | null>(null);
 
-  const metaMaskRepository = new MetaMaskRepository();
-
-  // Function to fetch XRPL Account using MetaMask Snap
+  // Fetch XRPL Account using MetaMask Snap
   const fetchXRPLAccount = async () => {
+    const provider = window.ethereum;
+
     try {
-      const wallet = await metaMaskRepository.getWallet();
-      if (wallet && wallet.account) {
-        setXrplAccount(wallet.account);
+      const wallet = await provider.request({
+        method: 'wallet_invokeSnap',
+        params: {
+          snapId: 'npm:@peersyst/xrpl-snap',
+          request: {
+            method: 'xrpl_getAccount',
+            params: undefined,
+          },
+        },
+      });
+
+      if (wallet && typeof wallet === 'object' && 'account' in wallet) {
+        setXrplAccount(wallet.account as string);
       } else {
         setStatus('Failed to fetch XRPL account.');
       }
@@ -66,69 +57,75 @@ const SetTrustline: React.FC = () => {
     }
 
     try {
-      if (window.ethereum) {
-        const provider = window.ethereum;
+      const provider = window.ethereum;
+      const currencyHex = convertCurrencyToHex(tokenCurrency);
 
-        const result = await provider.request({
-          method: 'wallet_invokeSnap',
-          params: {
-            snapId: 'npm:@peersyst/xrpl-snap',
-            request: {
-              method: 'xrpl_signAndSubmit',
-              params: {
-                TransactionType: 'TrustSet',
-                Account: xrplAccount, // Dynamically set the connected user’s account
-                LimitAmount: {
-                  currency: tokenCurrency,
-                  issuer: rAddress,
-                  value: limitAmount,
-                },
+      const result = await provider.request({
+        method: 'wallet_invokeSnap',
+        params: {
+          snapId: 'npm:@peersyst/xrpl-snap',
+          request: {
+            method: 'xrpl_signAndSubmit',
+            params: {
+              TransactionType: 'TrustSet',
+              Account: xrplAccount,
+              LimitAmount: {
+                currency: currencyHex,
+                issuer: rAddress,
+                value: limitAmount,
               },
             },
           },
-        });
+        },
+      });
 
-        setStatus(`Trustline set successfully: ${JSON.stringify(result)}`);
-      } else {
-        setStatus('MetaMask is not installed.');
-      }
+      setStatus(`Trustline set successfully: ${JSON.stringify(result)}`);
     } catch (error) {
       console.error('Error setting trustline:', error);
       setStatus('Error setting trustline.');
     }
   };
 
-  // Fetch the XRPL account when the component mounts
-  useEffect(() => {
-    fetchXRPLAccount();
-  }, []);
-
   return (
-    <div>
-      <h3>Set Up Trustline</h3>
-      <input
-        type="text"
-        value={rAddress}
-        onChange={(e) => setRAddress(e.target.value)}
-        placeholder="Enter Token rAddress"
-      />
-      <input
-        type="text"
-        value={limitAmount}
-        onChange={(e) => setLimitAmount(e.target.value)}
-        placeholder="Enter Limit Amount"
-      />
-      <input
-        type="text"
-        value={tokenCurrency}
-        onChange={(e) => setTokenCurrency(e.target.value)}
-        placeholder="Enter Token Currency (e.g., USD)"
-      />
-      <button onClick={setupTrustline} disabled={!xrplAccount}>
-        {xrplAccount ? 'Set Trustline' : 'Fetching XRPL Account...'}
+    <div className="w-full max-w-2xl mx-auto">
+      <h3 className="text-2xl font-bold mb-6 text-center">Set Up Trustline</h3>
+      <div className="mb-6">
+        <label className="block text-gray-700 mb-2">Token rAddress</label>
+        <input
+          type="text"
+          value={rAddress}
+          onChange={(e) => setRAddress(e.target.value)}
+          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter Token rAddress"
+        />
+      </div>
+      <div className="mb-6">
+        <label className="block text-gray-700 mb-2">Limit Amount</label>
+        <input
+          type="text"
+          value={limitAmount}
+          onChange={(e) => setLimitAmount(e.target.value)}
+          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter Limit Amount"
+        />
+      </div>
+      <div className="mb-6">
+        <label className="block text-gray-700 mb-2">Token Currency</label>
+        <input
+          type="text"
+          value={tokenCurrency}
+          onChange={(e) => setTokenCurrency(e.target.value)}
+          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter Token Currency"
+        />
+      </div>
+      <button
+        onClick={setupTrustline}
+        className="w-full py-3 px-6 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
+      >
+        Set Trustline
       </button>
-
-      {status && <p>{status}</p>}
+      {status && <p className="mt-4 text-center text-red-500">{status}</p>}
     </div>
   );
 };
