@@ -52,4 +52,3 @@ Before running this project, make sure you have the following installed:
 
 1. Once the application is running, click the **Connect MetaMask** button to connect your wallet.
 2. After connecting MetaMask, your XRPL account will be fetched automatically.
-3. Choose from the different XRPL transaction options to transact.
