@@ -52,9 +52,3 @@ Before running this project, make sure you have the following installed:
 
 1. Once the application is running, click the **Connect MetaMask** button to connect your wallet.
 2. After connecting MetaMask, your XRPL account will be fetched automatically.
-3. Enter the token issuer address, token currency (e.g., USD), and limit amount to set up a trustline.
-4. Click **Set Trustline** to establish a trustline on the XRP Ledger.
-
-## License
-
-This project is open-source and available under the [MIT License](LICENSE).
