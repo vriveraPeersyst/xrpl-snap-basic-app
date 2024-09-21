@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MetaMaskInpageProvider } from '@metamask/providers';
 
 declare global {
@@ -7,14 +7,55 @@ declare global {
   }
 }
 
+// MetaMaskRepository Class (simulating the getWallet method)
+class MetaMaskRepository {
+  public async getWallet(): Promise<{ account: string } | null> {
+    if (!window.ethereum) {
+      throw new Error('MetaMask is not available');
+    }
+
+    const provider = window.ethereum;
+
+    const result = await provider.request({
+      method: 'wallet_invokeSnap',
+      params: {
+        snapId: 'npm:@peersyst/xrpl-snap',
+        request: {
+          method: 'xrpl_getAccount',
+          params: undefined,
+        },
+      },
+    });
+
+    if (result && typeof result === 'object' && 'account' in result) {
+      return result as { account: string };
+    }
+
+    return null; // If the result is invalid or doesn't have an account
+  }
+}
+
 // Utility function to convert currency string to 40-character hex if needed
 const convertCurrencyToHex = (currency: string): string => {
-  if (/^[A-Fa-f0-9]{40}$/.test(currency)) return currency;
-  if (currency.length === 3) return currency;
+    // Check if it's already a valid 40-character hex string
+    if (/^[A-Fa-f0-9]{40}$/.test(currency)) {
+      return currency;
+    }
   
-  const currencyHex = Buffer.from(currency, 'utf8').toString('hex').toUpperCase();
-  return currencyHex.padEnd(40, '0');
-};
+    // If the currency code is exactly 3 characters, keep it as-is
+    if (currency.length === 3 && /^[A-Za-z0-9?!@#$%^&*<>()[\]{}|]+$/.test(currency)) {
+      return currency; // Return the original 3-character code without converting to hex
+    }
+  
+    // Convert non-standard currency codes to hex
+    const currencyHex = Buffer.from(currency, 'utf8').toString('hex').toUpperCase();
+  
+    // Pad the hex value to 40 characters if necessary (right pad with 0s)
+    const paddedCurrencyHex = currencyHex.padEnd(40, '0');
+  
+    return paddedCurrencyHex;
+  };
+  
 
 const SetTrustline: React.FC = () => {
   const [rAddress, setRAddress] = useState('');
@@ -23,24 +64,14 @@ const SetTrustline: React.FC = () => {
   const [status, setStatus] = useState<string | null>(null);
   const [xrplAccount, setXrplAccount] = useState<string | null>(null);
 
-  // Fetch XRPL Account using MetaMask Snap
+  const metaMaskRepository = new MetaMaskRepository();
+
+  // Function to fetch XRPL Account using MetaMask Snap
   const fetchXRPLAccount = async () => {
-    const provider = window.ethereum;
-
     try {
-      const wallet = await provider.request({
-        method: 'wallet_invokeSnap',
-        params: {
-          snapId: 'npm:@peersyst/xrpl-snap',
-          request: {
-            method: 'xrpl_getAccount',
-            params: undefined,
-          },
-        },
-      });
-
-      if (wallet && typeof wallet === 'object' && 'account' in wallet) {
-        setXrplAccount(wallet.account as string);
+      const wallet = await metaMaskRepository.getWallet();
+      if (wallet && wallet.account) {
+        setXrplAccount(wallet.account);
       } else {
         setStatus('Failed to fetch XRPL account.');
       }
@@ -57,34 +88,45 @@ const SetTrustline: React.FC = () => {
     }
 
     try {
-      const provider = window.ethereum;
-      const currencyHex = convertCurrencyToHex(tokenCurrency);
+      if (window.ethereum) {
+        const provider = window.ethereum;
 
-      const result = await provider.request({
-        method: 'wallet_invokeSnap',
-        params: {
-          snapId: 'npm:@peersyst/xrpl-snap',
-          request: {
-            method: 'xrpl_signAndSubmit',
-            params: {
-              TransactionType: 'TrustSet',
-              Account: xrplAccount,
-              LimitAmount: {
-                currency: currencyHex,
-                issuer: rAddress,
-                value: limitAmount,
+        // Convert token currency to hex if needed
+        const currencyHex = convertCurrencyToHex(tokenCurrency);
+
+        const result = await provider.request({
+          method: 'wallet_invokeSnap',
+          params: {
+            snapId: 'npm:@peersyst/xrpl-snap',
+            request: {
+              method: 'xrpl_signAndSubmit',
+              params: {
+                TransactionType: 'TrustSet',
+                Account: xrplAccount, // Dynamically set the connected user’s account
+                LimitAmount: {
+                  currency: currencyHex, // Currency code in hex
+                  issuer: rAddress,
+                  value: limitAmount,
+                },
               },
             },
           },
-        },
-      });
+        });
 
-      setStatus(`Trustline set successfully: ${JSON.stringify(result)}`);
+        setStatus(`Trustline set successfully: ${JSON.stringify(result)}`);
+      } else {
+        setStatus('MetaMask is not installed.');
+      }
     } catch (error) {
       console.error('Error setting trustline:', error);
       setStatus('Error setting trustline.');
     }
   };
+
+  // Fetch the XRPL account when the component mounts
+  useEffect(() => {
+    fetchXRPLAccount();
+  });
 
   return (
     <div className="w-full max-w-2xl mx-auto">
