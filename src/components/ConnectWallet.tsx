@@ -3,7 +3,7 @@ import type { MetaMaskInpageProvider, RequestArguments } from '@metamask/provide
 
 // Hardcoded config object (replace with dynamic values as necessary)
 const config = {
-  snapOrigin: 'npm:@peersyst/xrpl-snap', // Or your local snap URL
+  snapOrigin: 'npm:xrpl-snap', // Or your local snap URL
 };
 
 // MetaMaskRepository Class (defined locally within the same file)
