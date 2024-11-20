@@ -169,6 +169,16 @@ export const transactionExamples: Record<string, object> = {
       Amount: '1000000',
       Destination: '',
     },
+    IOUPayment: {
+      TransactionType: 'Payment',
+      Account: '', // Replace dynamically
+      Amount: {
+        currency: 'USD', // Currency code (e.g., USD)
+        issuer: '', // Issuer account (rAddress)
+        value: '100', // Value of the IOU
+      },
+      Destination: '',
+    },
     PaymentChannelClaim: {
       TransactionType: 'PaymentChannelClaim',
       Account: '', // Replace dynamically

@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import ConnectWallet from './components/ConnectWallet';
-import SetTrustline from './components/SetTrustline';
-import CancelTrustline from './components/CancelTrustline';
 import XRPLTransactions from './components/XRPLTransactions';
 import xrplLogo from './assets/xrplsnaplogo1.png';
 
