@@ -1,46 +1,110 @@
-# XRPL EVM Governance Discord Bot
+# XRPL MetaMask Snap React App
 
-A Node.js application that automatically scrapes governance proposals from a Cosmos-based API or website, then sends status updates and vote notifications to a Discord channel. This setup includes:
+This repository contains a **React** application bootstrapped with **Create React App** and **TypeScript**, demonstrating how to integrate the [XRPL MetaMask Snap](https://github.com/ximinez/metamask-snap-developer-guide) functionality. The app allows users to connect their **XRPL** account through MetaMask, display their account, and submit various types of XRPL transactions.
 
-- Automated scraping of new proposals and their votes.
-- Real-time Discord notifications for new proposals, new votes, and status changes (e.g., passed, rejected).
-- Structured storage of known proposals in a JSON file for tracking across runs.
-- Automatic creation of Discord threads for each proposal, providing a central place for follow-up notifications.
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Starting the Development Server](#starting-the-development-server)
+  - [Connecting the XRPL Snap](#connecting-the-xrpl-snap)
+  - [Submitting Transactions](#submitting-transactions)
+  - [Testing](#testing)
+  - [Building for Production](#building-for-production)
+- [Tailwind CSS Configuration](#tailwind-css-configuration)
+- [Utility Scripts](#utility-scripts)
+  - [extract_all_files.sh](#extract_all_filessh)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## Table of Contents
-1. [Features](#features)
-2. [Getting Started](#getting-started)
-3. [Configuration](#configuration)
-4. [Usage](#usage)
-5. [Project Structure](#project-structure)
-6. [License](#license)
+## Overview
+
+This project demonstrates a simple user flow for interacting with the **XRPL** through MetaMask using the XRPL Snap. Users can:
+
+1. **Connect** their MetaMask wallet (with XRPL Snap installed).
+2. **Select** an XRPL transaction type (e.g., Payment, TrustSet, OfferCreate, etc.).
+3. **Edit** the JSON for the chosen transaction in a text area.
+4. **Sign** and **submit** the transaction to the XRPL main or test network (depending on how the snap is configured).
+
+The core components are:
+
+- **`ConnectWallet.tsx`**: Manages MetaMask connection, requests the XRPL Snap, and retrieves the XRPL account address.
+- **`XRPLTransactions.tsx`**: Provides a dropdown for transaction types and a text area to review/edit transaction JSON, then invokes the snap for signing and submission.
+- **`transactionExamples.ts`**: A collection of example XRPL transaction types to bootstrap the user interface.
 
 ---
 
 ## Features
 
-- **Discord Bot:** Listens for new proposals, updates, and vote events. Posts notifications to a specified Discord channel.
-- **Automated Proposal Scraping:** Uses either a web-scraping approach (via Puppeteer) or a Cosmos API endpoint to pull data on proposals, their current voting status, and votes.
-- **Thread Management:** Creates individual Discord threads for new proposals to keep relevant updates and discussions in one place.
-- **Vote Tracking:** Notifies whenever new votes appear. Summarizes the total votes for each option (Yes / No / Veto / Abstain).
-- **Cron Scheduling:** Uses `node-cron` to schedule the scraping tasks at a given interval (default: every minute).
-- **JSON Storage:** Persists known proposals in a local JSON file (`knownProposals.json`) to track ongoing status across bot restarts.
+- **MetaMask XRPL Snap Integration**: Shows how to request the snap and call its methods.
+- **Tailwind CSS**: Quickly style UI with a utility-first CSS framework.
+- **TypeScript**: Provides type safety throughout the project.
+- **Create React App**: Standard build scripts and development environment.
+- **Transaction Examples**: Prebuilt JSON templates for various XRPL transaction types.
 
 ---
 
-## Getting Started
+## Project Structure
 
-### Prerequisites
-- **Node.js** (version 16+ recommended)
-- **npm** or **yarn**
-- A **Discord Bot Token** ([how to create a Discord Bot](https://discord.com/developers/applications))
-- Basic knowledge of environment variables and Discord channel setup
+```
+.
+├── public/
+│   ├── favicon.ico
+│   ├── index.html
+│   ├── manifest.json
+│   └── xrplsnaplogo1.png
+├── src/
+│   ├── assets/
+│   │   └── xrplsnaplogo1.png
+│   ├── components/
+│   │   ├── ConnectWallet.tsx
+│   │   ├── XRPLTransactions.tsx
+│   │   └── transactionExamples.ts
+│   ├── App.css
+│   ├── App.test.tsx
+│   ├── App.tsx
+│   ├── index.css
+│   ├── index.tsx
+│   ├── logo.svg
+│   ├── react-app-env.d.ts
+│   ├── reportWebVitals.ts
+│   └── setupTests.ts
+├── tailwind.config.js
+├── tsconfig.json
+├── package.json
+├── .gitignore
+└── extract_all_files.sh
+```
 
-### Installation
-1. **Clone** this repository or copy the relevant files into your project.
-2. **Install dependencies**:
+### Key Files
+
+- **`tailwind.config.js`**: Tailwind CSS configuration.
+- **`extract_all_files.sh`**: Shell script to collect all non-binary/text files into a single output file (excluding certain directories and files).
+- **`public/index.html`**: The main HTML file used by Create React App.
+- **`src/index.tsx`**: Entry point of the React application.
+- **`src/App.tsx`**: The main React component that ties everything together.
+- **`src/components/ConnectWallet.tsx`**: Handles MetaMask and XRPL Snap connection.
+- **`src/components/XRPLTransactions.tsx`**: Allows the user to edit and submit XRPL transactions.
+- **`src/components/transactionExamples.ts`**: Houses predefined JSON examples for XRPL transactions.
+
+---
+
+## Installation
+
+1. **Clone** the repository:
+   ```bash
+   git clone https://github.com/your-username/your-repo-name.git
+   ```
+2. **Navigate** to the project directory:
+   ```bash
+   cd your-repo-name
+   ```
+3. **Install** dependencies:
    ```bash
    npm install
    ```
@@ -48,110 +112,107 @@ A Node.js application that automatically scrapes governance proposals from a Cos
    ```bash
    yarn install
    ```
-3. **Create an `.env` file** at the root of the project (or rename `.env.example` to `.env`) and fill in the required environment variables (see [Configuration](#configuration)).
-
----
-
-## Configuration
-
-The `.env.example` file illustrates the environment variables needed:
-
-```bash
-DISCORD_BOT_TOKEN=YOUR_DISCORD_BOT_TOKEN
-DISCORD_CHANNEL_ID=YOUR_DISCORD_CHANNEL_ID
-PROPOSAL_PAGE_URL=https://governance.xrplevm.org/xrplevm/proposals/36
-BASE_PROPOSAL_URL=https://governance.xrplevm.org/xrplevm/proposals
-COSMOS_GOV_API_URL= # Optional if you prefer the Cosmos Gov API approach
-```
-
-- **DISCORD_BOT_TOKEN**: The token for your Discord bot.
-- **DISCORD_CHANNEL_ID**: The channel ID where the bot will post notifications.
-- **PROPOSAL_PAGE_URL**: The specific URL for a single proposal you might track (used in old Puppeteer code).
-- **BASE_PROPOSAL_URL**: The base URL for the proposal pages if scraping using Puppeteer. 
-- **COSMOS_GOV_API_URL**: The base URL for the Cosmos governance API if using the axios-based approach.
-
-You can omit or disable one of the scraping strategies if only one is needed. By default, the bot tries to use the environment variables properly, but you can modify the code if you want to only use Puppeteer or the Cosmos Gov API.
 
 ---
 
 ## Usage
 
-1. **Run** the bot with:
-   ```bash
-   npm start
-   ```
-   or
-   ```bash
-   node ./src/bot.js
-   ```
+### Starting the Development Server
 
-2. **Behavior**:
-   - Once started, the bot logs into Discord and immediately performs a scraping cycle (`scrapeAllProposals` + `validateProposals`).
-   - The scraping cycle repeats every minute (adjustable via `node-cron` in [src/bot.js](./src/bot.js)).
-   - New proposals are announced in the specified Discord channel as separate messages. A dedicated thread is created for each proposal to group status updates and new vote notifications.
+To start the development server on [http://localhost:3000](http://localhost:3000):
 
-3. **File Outputs**:
-   - `knownProposals.json`: A persistent file that stores recognized proposals. 
-   - `threadMap.json`: Maps each proposal to its Discord thread ID, so updates can continue in the correct thread.
+```bash
+npm start
+```
+or
+```bash
+yarn start
+```
 
-4. **Generating a Complete Code Bundle**:
-   - The included script `save_project_code.sh` collects all relevant code into a single `code.txt` file (excluding specified filetypes and directories). Run:
-     ```bash
-     ./save_project_code.sh
-     ```
-     This is useful for archiving or sharing a snapshot of the code.
+### Connecting the XRPL Snap
+
+1. **Install MetaMask** (if you haven't already).  
+2. **Enable Snaps support** in MetaMask (this feature might still be in beta, so ensure you're running a version of MetaMask that supports snaps).  
+3. When you click **Connect XRPL MetaMask Snap**, the app will:
+   - Request your MetaMask EVM accounts.
+   - Prompt MetaMask to install the XRPL Snap (`npm:xrpl-snap`), if not already installed.
+   - Retrieve your XRPL address from the snap.
+
+### Submitting Transactions
+
+1. Once connected, select a **transaction type** from the dropdown (e.g., `Payment`, `TrustSet`, etc.).
+2. The corresponding **transaction JSON** is auto-populated, but you can modify it if needed.
+3. Click **Execute Transaction** to sign and submit the transaction.  
+4. A success or error message will appear, indicating the result of the submission.
+
+### Testing
+
+This project uses the default **Jest** setup from Create React App. To run tests:
+
+```bash
+npm test
+```
+or
+```bash
+yarn test
+```
+
+### Building for Production
+
+Build a production-ready bundle by running:
+
+```bash
+npm run build
+```
+or
+```bash
+yarn build
+```
+
+The output will be placed in the `build/` directory. You can then serve the contents of `build/` using your preferred hosting solution.
 
 ---
 
-## Project Structure
+## Tailwind CSS Configuration
 
-<details>
-<summary>Click to expand</summary>
+This project uses **Tailwind CSS** for styling, with the configuration defined in:
+- **`tailwind.config.js`**
+- **`src/index.css`** (to include Tailwind's base, components, and utilities)
 
+Any additional Tailwind customization (colors, plugins, etc.) can be added to `tailwind.config.js` under the `theme.extend` object.
+
+---
+
+## Utility Scripts
+
+### `extract_all_files.sh`
+
+A simple shell script that collects the text content of all files in the repository (excluding `.git`, `node_modules`, `package-lock.json`, and itself), concatenating them into a single file named `all_files_except_package_lock_and_git.txt`.
+
+Usage:
+```bash
+chmod +x extract_all_files.sh
+./extract_all_files.sh
 ```
-.
-├── LICENSE                 # MIT License
-├── .gitignore
-├── .env.example            # Template for environment variables
-├── save_project_code.sh    # Script to compile code into a single text file
-├── src
-│   ├── bot.js              # Main entry point for the Discord bot
-│   ├── validateProposals.js # Validates proposals, updates statuses and votes
-│   ├── utils
-│   │   ├── puppeteerOld.js # Puppeteer-based web scraping logic
-│   │   └── cosmosGovApi.js # Axios-based API scraping logic
-│   ├── handlers
-│   │   ├── notifyNewProposal.js # Handles new proposal notification logic
-│   │   ├── notifyNewVotes.js    # Handles new votes notification logic
-│   │   └── notifyNewStatus.js   # Handles changes in proposal status
-├── knownProposals.json (created at runtime)
-├── threadMap.json (created at runtime)
-└── package.json
-```
-</details>
 
-**Key Scripts**:
-- **`src/bot.js`**: Initializes the Discord bot, sets up a cron job, and orchestrates scraping tasks.
-- **`validateProposals.js`**: Compares known proposals with newly scraped data, triggers status or vote notifications as needed.
-- **`puppeteerOld.js`**: Original Puppeteer-based approach to scrape proposal pages.
-- **`cosmosGovApi.js`**: Axios-based approach for pulling proposals directly from a Cosmos Gov API endpoint.
+The script is helpful if you need a single text file of your project’s source (I use it to give AI context).
+
+---
+
+## Contributing
+
+Contributions are welcome! If you wish to contribute:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Commit your changes and open a pull request.
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE). 
-
-```
-MIT License
-
-Copyright (c) 2024 vriveraPeersyst
-```
-
-See [LICENSE](./LICENSE) for the full license text.
+This project is released under the [MIT License](https://opensource.org/licenses/MIT). Feel free to modify and distribute as per the license terms. If you distribute changes, we’d appreciate attribution back to this original repository.
 
 ---
 
-### Thanks for using the XRPL EVM Governance Discord Bot!
-
-If you find any issues, feel free to open an issue or submit a pull request.
+Happy hacking and enjoy exploring the **XRPL** via MetaMask Snaps! If you encounter any issues or have suggestions, feel free to open an issue or pull request.
